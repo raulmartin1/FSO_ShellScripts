@@ -1,0 +1,61 @@
+let comptador=1
+comprimit="${@: -1}"
+#i serà el primer dels fitxers a comprimir
+if [ $# -lt 2 ]
+then 
+	echo "Necessites mes arguments"
+	exit 1
+fi
+
+if [ "$1" = "-D" ] || [ "$2" = "-D" ]
+then
+	tail -39  $0
+	exit 0
+else
+	if [ "$1" = "-K" ]
+	#S'utilitza i com a flag del primer arxiu
+	then let i=2		
+	else let i=1
+	fi
+	#Copia de seguretat: compressio
+	temporal="dirTemp"
+	mkdir "$temporal"
+	if [ -e $comprimit ]
+	then tar -xpzf "$comprimit" -C "$temporal"
+	fi
+	cd "$temporal"
+	for arxiu in $*
+	do
+		if [ $comptador -ge $i ] && [ $comptador -ne $# ]
+		then
+			if [ $i -eq 2 ]
+			then	
+				data=$(stat -c %y "$arxiu" | cut -d' ' -f1 | sed 's/-//g')
+				nomNou="$arxiu.$data"
+				if [ -d $arxiu ]
+				then 
+					cp -r "$arxiu" "$nomNou"
+					cp -r "$nomNou" . 
+					rm -r "$nomNou"
+				else
+					cp "$arxiu" "$nomNou"
+					cp "$nomNou" .
+					rm "$nomNou"
+				fi 
+			fi
+			if [ -d "$arxiu" ] && [ $i -ne 2 ]
+			then cp -r "$arxiu" .
+			else
+				if [ $i -ne 2 ] 
+				then cp "$arxiu" .
+				fi
+			fi
+		fi
+		let comptador=comptador+1
+	done
+	tar -cpzf "$comprimit" *
+	cd ..
+	rm -r "$temporal"
+	echo "S'ha comprimit correctament"
+	exit 0
+fi

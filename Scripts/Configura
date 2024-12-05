@@ -1,0 +1,22 @@
+if [ "$#" -lt 5 ]
+then
+    echo "Necessites mes arguments"
+    exit 1
+fi
+
+dia="$1"
+hora=$(echo "$2" | cut -d':' -f1)
+minuts=$(echo "$2" | cut -d':' -f2)
+nomScript="$3"
+if [ ! -x "$nomScript" ]
+then
+    echo "No existeix l'script especificat."
+    exit 2
+fi
+
+for argument in "${@:1:4}"
+do resta+="$argument"
+done
+
+echo "$minuts $hora $dia * * $nomScript $resta" | crontab -
+echo "Copia de seguretat establerta correctament a $dia, $hora:$minuts."

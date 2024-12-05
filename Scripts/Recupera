@@ -1,0 +1,44 @@
+if [ $# -le 2 ]
+then 
+	echo "Necessites més arguments!"
+	exit 1
+fi
+if [ $1 = "-D" ]
+then
+	tail -33 $0
+	exit 0
+fi
+if [[ -e $1  && ( "$1" = *.tgz  || "$1" = *.tar.gz )]]
+then
+	comprimit="$1"
+	desti="${@: -1}"
+	temporal="dirTemp"
+	if [ ! -e $desti ]
+	then mkdir "$desti"
+	fi
+	mkdir "$temporal"
+	tar -xzf "$comprimit" -C "$temporal"
+	cd "$temporal"
+	for arxiu in $*
+	do
+		if [ "$arxiu" != "$desti" ] && [ "$arxiu" != "$comprimit" ] 
+		then 
+			if [ -d "$arxiu" ]	
+			then 
+				cp -r "$arxiu" "$desti"
+				if [ -e "$arxiu".* ]
+				then cp -r "$arxiu".* "$desti"
+				fi 
+			else 
+				cp "$arxiu" "$desti"
+				if [ -e "$arxiu".* ]
+				then cp "$arxiu".* "$desti"
+				fi
+			fi
+		fi
+	done
+	cd ..
+	rm -r "$temporal"
+	echo "La recuperació ha sigut satisfactoria"
+	exit 0
+fi
